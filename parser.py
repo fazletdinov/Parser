@@ -3,8 +3,6 @@ from fake_useragent import UserAgent
 from requests import Session
 
 headers = {"User-Agent": UserAgent().opera}
-payload = {"__RequestVerificationToken": "", "Email": "testuser022@gmail.ru",
-           "Password": "testuser12345", "RememberMe": False}
 
 work = Session() # Создаем сессию
 
@@ -16,12 +14,19 @@ response = work.get('https://www.moscowbooks.ru/user/login/', headers=headers)
 soup = BeautifulSoup(response.text, 'lxml')
 
 token = soup.find('form', class_="account-form form js-account-form").find('input').get('value') # получаем токен
-payload = {"__RequestVerificationToken": token, "Email": "testusert022@gmail.com",
+
+pyload = {"__RequestVerificationToken": token, "Email": "testusert022@gmail.com",
            "Password": "testusert12345", "RememberMe": False}
-work.post('https://www.moscowbooks.ru/user/login/', headers=headers, data=payload, allow_redirects=True)
+
+work.post('https://www.moscowbooks.ru/user/login/', headers=headers, data=pyload, allow_redirects=True)
 
 def search_page():
-    for page in range(1, 2):
+    for page in range(1,2):
         url = f'https://www.moscowbooks.ru/books/fiction/?page={page}'
         response = work.get(url, headers=headers)
         soup = BeautifulSoup(response.text, 'lxml')
+        url_list = soup.find_all('div', class_='catalog__item col-xs-2 col-sm-1 col-md-1 js-catalog-item')
+        for url in url_list:
+            url_books = 'https://www.moscowbooks.ru' + url.find('a').get('href')
+            yield url_books
+
